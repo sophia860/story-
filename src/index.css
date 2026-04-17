@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Crimson Pro", serif;
+  --font-sans: "Inter", sans-serif;
+  --color-primary: #3D3A35;
+  --color-accent: #C8B6A6;
+  --color-bg: #FDFCF8;
+}
+
+body {
+  @apply bg-[#FDFCF8] text-[#3D3A35] font-sans antialiased selection:bg-[#F5E8D3];
+}
+
+.story-content p {
+  @apply mb-6 leading-[1.8] text-lg md:text-xl font-serif;
+}
+
+.parent-note {
+  @apply bg-[#F5F1E9] border-l-4 border-[#C8B6A6] p-6 my-6 rounded-r-2xl italic text-[#6B655C] shadow-sm;
+}
+
+.glass {
+  @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl;
+}
+
+/* Dreamy Sleepy Effects */
+.dream-background {
+  background: radial-gradient(circle at top right, #FDFCF8, #F5E8D3 40%, #E8F1EB 80%);
+}
+
+.floating {
+  animation: float 8s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+/* Custom scrollbar for a softer look */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-[#C8B6A6]/20 rounded-full hover:bg-[#C8B6A6]/40 transition-colors;
+}
+

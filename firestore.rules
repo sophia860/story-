@@ -1,0 +1,108 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: users
+// Document ID: {uid}
+// Fields:
+//   - uid: string (required)
+//   - email: string (required)
+//   - displayName: string
+//   - createdAt: string (date-time)
+//
+// Collection: stories
+// Document ID: auto-generated
+// Fields:
+//   - id: string
+//   - authorUid: string (required) - UID of the parent creator
+//   - childName: string (required, max 50 chars)
+//   - childAge: string (required, e.g. "a 3 year old")
+//   - parentInput: string (required, max 2000 chars)
+//   - mode: string (required, enum: ["single", "arc"])
+//   - timeframe: string (optional)
+//   - tone: string (required)
+//   - title: string
+//   - content: string
+//   - parentScript: string
+//   - createdAt: string (required, date-time)
+//   - isArc: bool
+//   - arcData: string (JSON string)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.authorUid;
+    }
+
+    function isNewDocOwner() {
+      return isAuthenticated() && request.auth.uid == request.resource.data.authorUid;
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*$");
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data.uid == request.auth.uid &&
+             isValidEmail(data.email) &&
+             (data.displayName == null || (data.displayName is string && data.displayName.size() < 100));
+    }
+
+    function isValidStory(data) {
+      return data.authorUid == request.auth.uid &&
+             data.childName is string && data.childName.size() > 0 && data.childName.size() <= 50 &&
+             data.childAge is string && data.childAge.size() <= 30 &&
+             data.parentInput is string && data.parentInput.size() <= 3000 &&
+             data.mode in ['single', 'arc'] &&
+             isValidDateString(data.createdAt);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data);
+    }
+
+    match /stories/{storyId} {
+      allow read: if isDocOwner();
+      allow create: if isNewDocOwner() && isValidStory(request.resource.data);
+      allow update: if isDocOwner() && isValidStory(request.resource.data) && 
+                      request.resource.data.authorUid == resource.data.authorUid &&
+                      request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isDocOwner();
+    }
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

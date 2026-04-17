@@ -1,0 +1,48 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Information about the parent using the app",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Story": {
+      "title": "Bedtime Story",
+      "description": "A generated story for a child",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "authorUid": { "type": "string" },
+        "childName": { "type": "string" },
+        "childAge": { "type": "string" },
+        "parentInput": { "type": "string" },
+        "mode": { "type": "string", "enum": ["single", "arc"] },
+        "timeframe": { "type": "string" },
+        "tone": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "parentScript": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "isArc": { "type": "boolean" },
+        "arcData": { "type": "string", "description": "JSON string for multi-night arcs" }
+      },
+      "required": ["authorUid", "childName", "childAge", "parentInput", "mode", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{uid}": {
+      "schema": "UserProfile",
+      "description": "User profile documents"
+    },
+    "stories/{storyId}": {
+      "schema": "Story",
+      "description": "Generated stories collection"
+    }
+  }
+}
